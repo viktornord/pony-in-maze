@@ -11,12 +11,6 @@ const positionByDirection = {
   south: start => start + mazeWidth,
   east: start => start + 1
 };
-const directionByMove = {
-  [1]: (start, end) => start - mazeWidth,
-  [-1]: (start, end) => start - 1,
-  [mazeWidth]: (start, end) => start + mazeWidth,
-  [-mazeWidth]: (start, end) => start + 1
-};
 
 // get direction when moving to nearest position
 function getDirectionName(startPosition, endPosition) {
@@ -29,17 +23,21 @@ function getDirectionName(startPosition, endPosition) {
   }
 }
 
+/**
+ * Paths data structure
+ *
+ * is an object where keys are weights and values are positions with this weight
+ */
 
 
 console.log(getShortestPath(PONY, END_POINT));
 
 function getShortestPath(sourcePosition, targetPosition) {
-  const weightedPaths = {paths: [], maxWeight: 0};
-  weightedPaths.paths[targetPosition] = weightedPaths.maxWeight;
+  const weightedPaths = {paths: {}, maxWeight: 0};
+  weightedPaths.paths[weightedPaths.maxWeight] = targetPosition;
 
   let lastWeightedPositions = [targetPosition];
   while (!lastWeightedPositions.includes(sourcePosition)) {
-    console.log(lastWeightedPositions);
     // retrieving new weighted positions until we reach the startPosition
     lastWeightedPositions = lastWeightedPositions.reduce((newWeightedPositions, position) => {
 
@@ -48,6 +46,11 @@ function getShortestPath(sourcePosition, targetPosition) {
     // increase max weight if at least one new position weighted
     lastWeightedPositions.length > 0 && weightedPaths.maxWeight++;
   }
+  // go down the road to find the target position (reverse walking from the source to target following the shortest path)
+  // for (let reverseStep = weightedPaths.maxWeight; reverseStep > 0; reverseStep--) {
+  //   const index = weightedPaths.paths.findIndex(reverseStep);
+  //   console.log(index);
+  // }
 
   return weightedPaths;
 }
@@ -58,9 +61,12 @@ function weightNextStep(position, paths, maxWeight) {
   const stepWeightedPositions = getWalkableDirections(position)
     .map(direction => positionByDirection[direction](position))
     // filter out already weighted position to avoid moving back
-    .filter(positionToBeWeighted => paths[positionToBeWeighted] === undefined);
+    .filter(positionToBeWeighted => !paths[stepWeight] || !paths[stepWeight].includes(positionToBeWeighted));
   // wighting positions based on weight of previous steps
-  stepWeightedPositions.forEach(weightedPosition => paths[weightedPosition] = stepWeight);
+  stepWeightedPositions.forEach(weightedPosition => {
+    !paths[stepWeight] && (paths[stepWeight] = []);
+    paths[stepWeight].push(weightedPosition);
+  });
 
   return stepWeightedPositions;
 }
@@ -81,4 +87,3 @@ function getWalkableDirections(position) {
 
   return walkableDirections;
 }
-
