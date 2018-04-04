@@ -34,7 +34,7 @@ console.log(getShortestPath(PONY, END_POINT));
 
 function getShortestPath(sourcePosition, targetPosition) {
   const weightedPaths = {paths: {}, maxWeight: 0};
-  weightedPaths.paths[weightedPaths.maxWeight] = targetPosition;
+  weightedPaths.paths[weightedPaths.maxWeight] = [targetPosition];
 
   let lastWeightedPositions = [targetPosition];
   while (!lastWeightedPositions.includes(sourcePosition)) {
@@ -46,13 +46,26 @@ function getShortestPath(sourcePosition, targetPosition) {
     // increase max weight if at least one new position weighted
     lastWeightedPositions.length > 0 && weightedPaths.maxWeight++;
   }
-  // go down the road to find the target position (reverse walking from the source to target following the shortest path)
-  // for (let reverseStep = weightedPaths.maxWeight; reverseStep > 0; reverseStep--) {
-  //   const index = weightedPaths.paths.findIndex(reverseStep);
-  //   console.log(index);
-  // }
 
-  return weightedPaths;
+  // go down the road to find the target position (reverse walking from the source to target following the shortest path)
+  const directionsToTheTarget = [];
+  let currentPosition = sourcePosition;
+  // const positionsHistory = [currentPosition];
+  for (let reverseStep = weightedPaths.maxWeight - 1; reverseStep >= 0; reverseStep--) {
+    const stepWeightedPositions = weightedPaths.paths[reverseStep];
+    const walkableDirections = getWalkableDirections(currentPosition);
+    const direction = walkableDirections.find(direction => {
+      // make sure new position is weighted, so belongs to the shortest path
+      return stepWeightedPositions.includes(positionByDirection[direction](currentPosition));
+    });
+    // memorize the direction
+    directionsToTheTarget.push(direction);
+    // move to the next position
+    currentPosition = positionByDirection[direction](currentPosition);
+    // positionsHistory.push(currentPosition);
+  }
+
+  return directionsToTheTarget;
 }
 
 function weightNextStep(position, paths, maxWeight) {
