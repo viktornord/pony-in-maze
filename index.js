@@ -1,10 +1,9 @@
 const maze = require('./maze');
 
 const [mazeWidth, mazeHeight] = maze.size;
+const [PONY] = maze.pony;
 const [END_POINT] = maze['end-point'];
 const possibleWalls = ['north', 'west'];
-const weightedPaths = {paths: [], maxValue: 0};
-weightedPaths.paths[END_POINT] = weightedPaths.maxValue;
 
 const positionByDirection = {
   north: start => start - mazeWidth,
@@ -12,29 +11,56 @@ const positionByDirection = {
   south: start => start + mazeWidth,
   east: start => start + 1
 };
+const directionByMove = {
+  [1]: (start, end) => start - mazeWidth,
+  [-1]: (start, end) => start - 1,
+  [mazeWidth]: (start, end) => start + mazeWidth,
+  [-mazeWidth]: (start, end) => start + 1
+};
 
-const [PONY] = maze.pony;
-
-let lastWeightedPositions = [END_POINT];
-while (!lastWeightedPositions.includes(PONY)) {
-  // retrieving new weighted positions until we reach the pony
-  lastWeightedPositions = lastWeightedPositions.reduce((newWeightedPositions, position) => {
-
-    return [...newWeightedPositions, ...weightNextStep(position)];
-  }, []);
+// get direction when moving to nearest position
+function getDirectionName(startPosition, endPosition) {
+  const delta = endPosition - startPosition;
+  switch (delta) {
+    case 1: return 'east';
+    case -1: return 'west';
+    case mazeWidth: return 'south';
+    case -mazeWidth: return 'north';
+  }
 }
 
-console.log(weightedPaths);
 
-function weightNextStep(position) {
-  const stepWeight = ++weightedPaths.maxValue;
+
+console.log(getShortestPath(PONY, END_POINT));
+
+function getShortestPath(sourcePosition, targetPosition) {
+  const weightedPaths = {paths: [], maxWeight: 0};
+  weightedPaths.paths[targetPosition] = weightedPaths.maxWeight;
+
+  let lastWeightedPositions = [targetPosition];
+  while (!lastWeightedPositions.includes(sourcePosition)) {
+    console.log(lastWeightedPositions);
+    // retrieving new weighted positions until we reach the startPosition
+    lastWeightedPositions = lastWeightedPositions.reduce((newWeightedPositions, position) => {
+
+      return [...newWeightedPositions, ...weightNextStep(position, weightedPaths.paths, weightedPaths.maxWeight)];
+    }, []);
+    // increase max weight if at least one new position weighted
+    lastWeightedPositions.length > 0 && weightedPaths.maxWeight++;
+  }
+
+  return weightedPaths;
+}
+
+function weightNextStep(position, paths, maxWeight) {
+  const stepWeight = maxWeight + 1;
   // get positions to be wighted based on walkable directions
   const stepWeightedPositions = getWalkableDirections(position)
     .map(direction => positionByDirection[direction](position))
     // filter out already weighted position to avoid moving back
-    .filter(positionToBeWeighted => weightedPaths.paths[positionToBeWeighted] === undefined);
+    .filter(positionToBeWeighted => paths[positionToBeWeighted] === undefined);
   // wighting positions based on weight of previous steps
-  stepWeightedPositions.forEach(weightedPosition => weightedPaths.paths[weightedPosition] = stepWeight);
+  stepWeightedPositions.forEach(weightedPosition => paths[weightedPosition] = stepWeight);
 
   return stepWeightedPositions;
 }
