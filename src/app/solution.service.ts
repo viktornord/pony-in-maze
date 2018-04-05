@@ -1,5 +1,8 @@
-const maze = require('./maze');
-const possibleWalls = ['north', 'west'];
+import {Injectable} from '@angular/core';
+import {MazeService} from './maze.service';
+import {Router} from '@angular/router';
+
+const possibleWalls: maze.Wall[] = ['north', 'west'];
 
 /**
  * Paths data structure
@@ -7,15 +10,37 @@ const possibleWalls = ['north', 'west'];
  * is an object where keys are weights and values are positions with this weight
  */
 
-export class Solution {
-  constructor(maze) {
+@Injectable()
+export class SolutionService {
+  private static MAZE_ID_STORAGE_KEY = 'maze-id';
+  private maze: maze.IMaze;
+  private shortestPathDirections: string[];
+  private positionByDirection = {
+    north: start => start - this.mazeWidth,
+    west: start => start - 1,
+    south: start => start + this.mazeWidth,
+    east: start => start + 1
+  };
+
+  constructor(mazeService: MazeService, router: Router) {
+    const mazeId = localStorage.getItem(SolutionService.MAZE_ID_STORAGE_KEY);
+    mazeId ? mazeService.getMaze(mazeId).subscribe(maze => this.init(maze)) : router.navigate(['/maze-setup']);
+  }
+
+  init(maze: maze.IMaze) {
     this.maze = maze;
-    this.positionByDirection = {
-      north: start => start - this.mazeWidth,
-      west: start => start - 1,
-      south: start => start + this.mazeWidth,
-      east: start => start + 1
-    };
+    localStorage.setItem(SolutionService.MAZE_ID_STORAGE_KEY, maze.maze_id);
+    console.log('Maze initialized', this.maze);
+  }
+
+  solve(): string[] {
+
+    return this.shortestPathDirections = this.getShortestPath(this.pony, this.endPoint);
+  }
+
+  getSolution(): string[] {
+
+    return this.shortestPathDirections;
   }
 
   get mazeWidth() {
@@ -38,7 +63,7 @@ export class Solution {
     return this.maze['end-point'][0];
   }
 
-  getDirectionName(startPosition, endPosition) {
+  private getDirectionName(startPosition, endPosition): string {
     const delta = endPosition - startPosition;
     switch (delta) {
       case 1: return 'east';
@@ -48,7 +73,7 @@ export class Solution {
     }
   }
 
-  getShortestPath(sourcePosition, targetPosition) {
+  private getShortestPath(sourcePosition, targetPosition): string[] {
     const weightedPaths = {paths: {}, maxWeight: 0};
     weightedPaths.paths[weightedPaths.maxWeight] = [targetPosition];
 
@@ -84,9 +109,9 @@ export class Solution {
     return directionsToTheTarget;
   }
 
-  getWalkableDirections(position) {
+  private getWalkableDirections(position): string[] {
     const walls = this.maze.data[position];
-    const walkableDirections = possibleWalls.filter(direction => !walls.includes(direction));
+    const walkableDirections = possibleWalls.filter(direction => !walls.includes(direction)) as string[];
     // check for maze dimensions
     // check if there is a wall on the east direction (if it is on the west direction of the east cell)
     if (this.maze.data[position + 1] && !this.maze.data[position + 1].includes('west')) {
@@ -101,7 +126,7 @@ export class Solution {
     return walkableDirections;
   }
 
-  weightNextStep(position, paths, maxWeight) {
+  private weightNextStep(position, paths, maxWeight): string[] {
     const stepWeight = maxWeight + 1;
     // get positions to be wighted based on walkable directions
     const stepWeightedPositions = this.getWalkableDirections(position)

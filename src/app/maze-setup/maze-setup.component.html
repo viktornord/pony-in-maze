@@ -1,0 +1,19 @@
+<form id="form-maze-create" class="m-auto w-25 text-center panel" [formGroup]="form" (submit)="submit()">
+  <div class="form-group">
+    <label for="ponyName">Pony name</label>
+    <input id="ponyName" formControlName="maze-player-name" class="form-control" placeholder="Enter valid pony name">
+  </div>
+  <div class="form-group">
+    <label for="mazeWidth">Maze width</label>
+    <input id="mazeWidth" formControlName="maze-width" class="form-control" type="number" min="15" max="25" value="15">
+  </div>
+  <div class="form-group">
+    <label for="mazeHeight">Maze height</label>
+    <input id="mazeHeight" formControlName="maze-height" class="form-control" type="number" min="15" max="25" value="15">
+  </div>
+  <div class="form-group">
+    <label for="difficulty">Difficulty</label>
+    <input id="difficulty" formControlName="difficulty" class="form-control" type="number" min="0" max="10" value="5">
+  </div>
+  <button type="submit" class="js-maze-create w-100 btn btn-primary">Submit</button>
+</form>
