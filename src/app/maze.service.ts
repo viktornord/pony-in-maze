@@ -23,6 +23,6 @@ export class MazeService {
 
   getMazeScheme(id: string): Observable<string> {
 
-    return this.http.get<string>(`/maze/${id}/print`, {responseType: 'text'});
+    return this.http.get<string>(`/maze/${id}/print`, {responseType: 'text'} as {});
   }
 }
