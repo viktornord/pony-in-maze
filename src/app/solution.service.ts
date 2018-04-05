@@ -1,6 +1,9 @@
 import {Injectable} from '@angular/core';
 import {MazeService} from './maze.service';
-import {Router} from '@angular/router';
+import {BehaviorSubject} from 'rxjs/BehaviorSubject';
+import {Observable} from 'rxjs/Observable';
+import 'rxjs/add/observable/of';
+import 'rxjs/add/operator/filter';
 
 const possibleWalls: maze.Wall[] = ['north', 'west'];
 
@@ -12,6 +15,7 @@ const possibleWalls: maze.Wall[] = ['north', 'west'];
 
 @Injectable()
 export class SolutionService {
+  private maze$ = new BehaviorSubject(null);
   private static MAZE_ID_STORAGE_KEY = 'maze-id';
   private maze: maze.IMaze;
   private shortestPathDirections: string[];
@@ -22,20 +26,39 @@ export class SolutionService {
     east: start => start + 1
   };
 
-  constructor(mazeService: MazeService, router: Router) {
+  constructor(private mazeService: MazeService) {
     const mazeId = localStorage.getItem(SolutionService.MAZE_ID_STORAGE_KEY);
-    mazeId ? mazeService.getMaze(mazeId).subscribe(maze => this.init(maze)) : router.navigate(['/maze-setup']);
+    mazeId && mazeService.getMaze(mazeId).subscribe(maze => this.init(maze));
   }
 
   init(maze: maze.IMaze) {
     this.maze = maze;
+    this.maze$.next(maze);
     localStorage.setItem(SolutionService.MAZE_ID_STORAGE_KEY, maze.maze_id);
     console.log('Maze initialized', this.maze);
   }
 
+  isFinished(): boolean {
+
+    return this.maze['game-state'].state === 'won';
+  }
+
+  getMazeId(): string {
+
+    return this.maze ? this.maze.maze_id : localStorage.getItem(SolutionService.MAZE_ID_STORAGE_KEY);
+  }
+
   solve(): string[] {
 
-    return this.shortestPathDirections = this.getShortestPath(this.pony, this.endPoint);
+    this.shortestPathDirections = this.getShortestPath(this.pony, this.endPoint);
+    console.log('Solved', this.shortestPathDirections);
+
+    return this.shortestPathDirections;
+  }
+
+  onMazeUpdated(): Observable<maze.IMaze> {
+
+    return this.maze$.filter(val => val !== null);
   }
 
   getSolution(): string[] {
@@ -61,6 +84,10 @@ export class SolutionService {
   get endPoint() {
 
     return this.maze['end-point'][0];
+  }
+
+  updateState(state: maze.IGameState) {
+    this.maze['game-state'] = state;
   }
 
   private getDirectionName(startPosition, endPosition): string {

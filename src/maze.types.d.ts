@@ -1,10 +1,7 @@
 declare namespace maze {
   interface IMaze {
     maze_id: string;
-    'game-state': {
-      state: string;
-      'state-result': string;
-    },
+    'game-state': IGameState,
     pony: number[];
     domokun: number[];
     'end-point': number[];
@@ -20,6 +17,11 @@ declare namespace maze {
     "maze-height": number;
     "maze-player-name": string;
     difficulty: number;
+  }
+
+  interface IGameState {
+    state: string;
+    'state-result': string;
   }
 }
 

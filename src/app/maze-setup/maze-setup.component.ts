@@ -26,13 +26,14 @@ export class MazeSetupComponent implements OnInit {
     this.form = new FormGroup({
       'maze-width': new FormControl(15, [Validators.min(15), Validators.max(25)]),
       'maze-height': new FormControl(15, [Validators.min(15), Validators.max(25)]),
-      'maze-player-name': new FormControl('Rarity', Validators.required),
+      'maze-player-name': new FormControl('', Validators.required),
       difficulty: new FormControl(10, [Validators.min(0), Validators.max(10)]),
     });
   }
 
   submit() {
     this.mazeService.createMaze(this.form.getRawValue())
+      .switchMap(({maze_id}) => this.mazeService.getMaze(maze_id))
       .map(maze => this.solutionService.init(maze))
       .subscribe(
         () => this.router.navigate(['/maze']),
