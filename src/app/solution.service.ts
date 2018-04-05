@@ -40,7 +40,12 @@ export class SolutionService {
 
   isFinished(): boolean {
 
-    return this.maze['game-state'].state === 'won';
+    return this.maze && ['won', 'over'].includes(this.maze['game-state'].state);
+  }
+
+  getState(): maze.IGameState {
+
+    return this.maze && this.maze['game-state'];
   }
 
   getMazeId(): string {

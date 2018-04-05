@@ -27,7 +27,7 @@ export class MazeSetupComponent implements OnInit {
       'maze-width': new FormControl(15, [Validators.min(15), Validators.max(25)]),
       'maze-height': new FormControl(15, [Validators.min(15), Validators.max(25)]),
       'maze-player-name': new FormControl('', Validators.required),
-      difficulty: new FormControl(10, [Validators.min(0), Validators.max(10)]),
+      difficulty: new FormControl(5, [Validators.min(0), Validators.max(10)]),
     });
   }
 

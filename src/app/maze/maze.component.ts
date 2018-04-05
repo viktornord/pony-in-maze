@@ -40,7 +40,10 @@ export class MazeComponent implements OnInit {
         return this.updateScheme();
       })
       .subscribe(
-        () => console.log(`moved to ${direction}`),
+        () => {
+          console.log(`moved to ${direction}`);
+          this.isFinished() && this.toasterService.pop('info', 'Game over', this.solutionService.getState()['state-result']);
+        },
         error => {
           this.toasterService.pop('error', `Unable to perform movement to ${direction}`, error.error);
           this.steps.unshift(direction);
@@ -56,5 +59,10 @@ export class MazeComponent implements OnInit {
 
   newGame() {
     this.router.navigate(['/maze-setup'])
+  }
+
+  isFinished() {
+
+    return this.solutionService.isFinished();
   }
 }

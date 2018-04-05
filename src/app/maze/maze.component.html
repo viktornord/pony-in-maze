@@ -1,7 +1,7 @@
 <div class="container">
   <pre class="text-center">{{mazeScheme}}</pre>
   <div *ngIf="steps" class="text-center">
-    <button class="btn btn-primary" (click)="nextStep()">Next step</button>
+    <button class="btn btn-primary" *ngIf="!isFinished()" (click)="nextStep()">Next step</button>
     <button class="btn btn-primary" (click)="newGame()">New game</button>
   </div>
 </div>
